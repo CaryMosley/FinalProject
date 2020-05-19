@@ -68,5 +68,44 @@ The mean and median leverage percentage also tends to oscillate without any clea
 
 ![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/sentiment_distributions.png)
 
+Observations: 
+* The % of investors that are Bullish looks pretty normal distributed centered around 30-40%.
 
+* The % of investors that are beatish is skewed a bit lower but not too tailed. We can see that there are times where investors have been significantly more bearish than bullish.
 
+* The spread between the two is roughly normal centered around positive 10% in the spread.
+
+* The vast majority of the time the most bullish manager holds 200% leverage. It is rare that they are less than this. I might transform this into a dummy feature with 1 when the most bullish is 200% and 0 otherwise.
+
+* The most bearish manager tends to be clustered at 0% long, -50%, -100%, -125%, -150% and -200%.
+
+* The % leverage of the average manager is roughly normal with a  bit of a left tail and looks to be centered around 80%
+
+* The distribution of the median manager is quite different with clusters at 50%, 80% and 100% and a clear left tail in times of market turmoil.
+
+### NY Times Article EDA
+
+#### Wordclouds
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/article_count.png)
+
+Most days have a single digit number of articles however some days tend to have a lot of articles. I imagine that the days with more articles are likely to be due to times of stress in the market so I plan to add article count as an engineered feature.
+
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/headlines_cloud.png)
+
+Above is the wordcloud from the article headlines and below is the wordcloud from the article snippets.
+
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/snippets_cloud.png)
+
+The word clouds of the headlines look somewhat similar with New York prominent in both, company very prominent in the snippet cloud. "Deal", "rise", "new", "sell", "investor" are some other common words. 
+
+#### Sentiment Analysis
+
+Next I used the NLTK TextBlob function as well as the VADER sentiment function to turn my headlines and snippets into numerical sentiment values. I then grouped and averaged by the same weekly periods as the rest of my data.
+
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/nyt_sentiment_time_series.png)
+
+The weekly average sentiment for both TextBlob and VADER as well as snippet and headline is quite noisy and doesnt seem to exhibit any strong trend.
+
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/nyt_sentiment_distribution.png)
+
+The sentiment data all looks roughly normal. The headlines for both TextBlob and VADER seem to be somewhat more negative than the snippets which are centered above zero.
