@@ -1,6 +1,10 @@
 # Capstone Project- Fear and Sentiment in the Markets
 **Cary Mosley, May 2020
 
+## Project Overview
+
+The goal of this project is to develop a weekly forecasting model for the S&P500 using the VIX index, a few exogenous measures of investor sentiment, and overall sentiment as calculated using New York Times headlines and article snippets. I will collect, clean, process and explore the data before building univariate, multivariate, and Long-Short Term Memory Neural Network forecasting models. I will first evaluate my models using RMSE and AIC/BIC before settling on the highest performing of each. Finally I will implement a couple different trading strategies over my test time period to see which model works best under potential real world trading implementations.
+
 ## Notebooks
 Included in this github are a jupyter notebooks folder containing:
 
@@ -10,19 +14,33 @@ DataCleanandProcess.ipynb- Where I cleaned and performed pre-processing on my se
 
 EDA- A notebook where I performed significant EDA to explore my endogenous and exogenous variables.
 
-TimeSeriesModeling.ipynb- A notebook where I began with baseline models and continued through ARIMA, ARIMAX, VAR and VARMAX models on the SP500 and VIX indices.
+TimeSeriesModeling.ipynb- I began with baseline models and continued through ARIMA, ARIMAX, VAR and VARMAX, and finally LSTM models.
+
+TradingEvaluation.ipynb- I implement two different trading strategies and evaluate the outcome of my models here.
 
 My presentation deck is located here: https://docs.google.com/presentation/d/1PaTaL7PmdYINP538glLY_h3aETjdScsV6ozQD3CedYA/edit?usp=sharing
 
-## Goals
 
-The goal of this project is to combine SP500 closing data and VIX index closing data with various sentiment indicators to see if I can create a model that performs better than a baseline model. The VIX index is generally considered a fear index so the hope is that the mood (sentiment), as measured by various sentiment indicators, of investors might have an ability to improve the forecasting of the SP500.
+
+## Glossary
+
+I'm putting a few financial terms here for easy of explanation later
+
+* Bearish: Thinking that the equity market is going to decrease in value
+
+* Bullish: Thinking that the equity market is going to increase in value
+
+* Long: Positive exposure to the equity market. Can be expressed in dollars or % leverage
+
+* Short: Negative exposure to the equity market. Can be expressed in dollars or % leverage
+
+* VIX Index- A Chicago Board of Options Exchange calculated index that measures the expected 30 day volatility in the S&P 500
 
 ## Executive Summary
 
-I begin by collecting the daily closing prices for the SP500 and the VIX index. I also use the NY Times and the Quandl datasets containing the National Association of Active Managers sentiment and the American Associaton of Individual Investor sentiment data. From here I will clean and process the data, including performing natural language processing sentiment analysis on the NY Times data before performing EDA. Once this is complete I will go step by step beginning with a baseline model and then progressing to an ARIMA model. Next I will add my exogenous variables and move on to an ARIMAX and then a VARIMAX model. 
+I begin by collecting the daily closing prices for the SP500 and the VIX index. I also use the NY Times and the Quandl datasets containing the National Association of Active Managers sentiment and the American Associaton of Individual Investor sentiment data. From I cleaned and processed the data, including performing natural language processing sentiment analysis on the NY Times data before performing EDA. Next I will create progressively more complex models to examine the differences in how they perform. I go from a baseline persistance model to univariate models, to multivariate models, finally creating a LSTM model. The final evaluation I perform is seeing how the best performing model of each type does under two potential trading implementations. 
 
-I ended up with a VARMAX model that uses differenced SPY and VIX prices, with 1 lag and using the Median active manager leverage as my best model and models that very slightly outperformed my baseline. This is not too surprising as there is an entire industry focused on predicted financial market returns that has not been able to solve the problem. 
+Under both implementations the LSTM model performed the best, resulting in signficant outperformance compared to both a buy and hold strategy as well as the other models. By performing well under the constant leverage and even better under the scaled leverage model, it is clear that the LSTM is performing quite well. The LSTM model performed even better under the significantly changing market condiitons that occurred during march and april 2020.
 
 ## Data Collection
 
@@ -41,7 +59,6 @@ For the sentiment data the main processing I had to do was adjust the dates so t
 ### Stock Prices
 The first thing I did was take a look at the 4 different indices over my time period.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/stock_time_series_all.png)
 
 ![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/combined_stock_time_series.png)
 
@@ -52,19 +69,13 @@ There has been a strong upward trend in the S&P500, the Nasdaq Index, and the Ru
 
 ![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/AAII_time_series.png)
 
-Although there is a lot of oscillation there doesnt appear to be any strong trends in the data. Since all three sum to 100% I won't use the neutral sentiment value going forward. As the neutral value can be computed from the Bullish and Bearish percentages I'm going to drop it.
+Although there is a lot of oscillation there doesnt appear to be any strong trends in the data. Since all three sum to 100% I won't use the neutral sentiment value going forward. As the neutral value can be computed from the Bullish and Bearish percentages I'm going to drop it. This oscillation is found in all of these indicators along with a lack of noticeable trend over time.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/spread_time_series.png)
-
-I'm planning to keep the spread between the % investors that are bullish and bearish in my data set. As expected there is a large amount of oscillation but no strong trend in the time series.
 
 ![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/leverage_time_series.png)
 
 We can see that at times the most short manager still maintains a positive delta exposure to the market! The least long the most bullish manager gets appears to be below 100 only very infrequently. It also rarely gets above 200% exposure.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/mean_median_leverage_time_series.png)
-
-The mean and median leverage percentage also tends to oscillate without any clear trend with the average exposure genereally lower than the median.
 
 ![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/sentiment_distributions.png)
 
