@@ -60,7 +60,7 @@ For the sentiment data the main processing I had to do was adjust the dates so t
 The first thing I did was take a look at the 4 different indices over my time period.
 
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/combined_stock_time_series.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/combined_stock_time_series_final.png)
 
 
 There has been a strong upward trend in the S&P500, the Nasdaq Index, and the Russell 2000 over the time period barring a few periods of downwrd moving. The VIX doesn't exhibit a long-run trend but there are a few period where it spikes. Due to the strong correlation between the S&P500, Nasdaq and Russell 2000 I will focus on just the S&P500 and the VIX index going forward.
