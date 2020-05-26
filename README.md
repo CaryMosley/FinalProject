@@ -203,4 +203,4 @@ Again, the LSTM model outperformed the rest of the herd. By scaling the leverage
 
 ## Conclusions
 
-Although my models managed to eek out an improvement over baseline they are not noticeable better and I would not recommend making any investing decisions based on them.
+My LSTM model beat the buy and hold trading strategy in both trading scenarios I developed. The model outperformed at almost every point in the testing time period as well as during a period of market turbulence. I plan to continue to monitor and update my LSTM model as time goes on as well as build individual security predictions to see how they work across a basket of names.
