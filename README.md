@@ -67,17 +67,17 @@ There has been a strong upward trend in the S&P500, the Nasdaq Index, and the Ru
 
 ### Sentiment Indexes
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/AAII_time_series.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/AAII_time_series_final.png)
 
-Although there is a lot of oscillation there doesnt appear to be any strong trends in the data. Since all three sum to 100% I won't use the neutral sentiment value going forward. As the neutral value can be computed from the Bullish and Bearish percentages I'm going to drop it. This oscillation is found in all of these indicators along with a lack of noticeable trend over time.
+Although there is a lot of oscillation there doesnt appear to be any strong trends in the data. This oscillation is found in all of these indicators along with a lack of noticeable trend over time.
 
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/leverage_time_series.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/leverage_time_series_final.png)
 
 We can see that at times the most short manager still maintains a positive delta exposure to the market! The least long the most bullish manager gets appears to be below 100 only very infrequently. It also rarely gets above 200% exposure.
 
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/sentiment_distributions.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/sentiment_distributions_final.png)
 
 Observations: 
 * The % of investors that are Bullish looks pretty normal distributed centered around 30-40%.
@@ -97,15 +97,15 @@ Observations:
 ### NY Times Article EDA
 
 #### Wordclouds
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/article_count.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/article_count_final.png)
 
 Most days have a single digit number of articles however some days tend to have a lot of articles. I imagine that the days with more articles are likely to be due to times of stress in the market so I plan to add article count as an engineered feature.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/headlines_cloud.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/headlines_cloud_final.png)
 
 Above is the wordcloud from the article headlines and below is the wordcloud from the article snippets.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/snippets_cloud.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/snippets_cloud_final.png)
 
 The word clouds of the headlines look somewhat similar with New York prominent in both, company very prominent in the snippet cloud. "Deal", "rise", "new", "sell", "investor" are some other common words. 
 
