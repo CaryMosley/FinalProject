@@ -111,65 +111,37 @@ The word clouds of the headlines look somewhat similar with New York prominent i
 
 #### Sentiment Analysis
 
-Next I used the NLTK TextBlob function as well as the VADER sentiment function to turn my headlines and snippets into numerical sentiment values. I then grouped and averaged by the same weekly periods as the rest of my data.
+Next I used the NLTK TextBlob function as well as the VADER sentiment function to turn my headlines and snippets into numerical sentiment values. I then grouped and averaged by the same weekly periods as the rest of my data. The weekly average sentiment for both TextBlob and VADER as well as snippet and headline is quite noisy and doesnt seem to exhibit any strong trend.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/nyt_sentiment_time_series.png)
-
-The weekly average sentiment for both TextBlob and VADER as well as snippet and headline is quite noisy and doesnt seem to exhibit any strong trend.
-
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/nyt_sentiment_distribution.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/nyt_sentiment_distribution_final.png)
 
 The sentiment data all looks roughly normal. The headlines for both TextBlob and VADER seem to be somewhat more negative than the snippets which are centered above zero.
 
-## Initial Modeling
+## Modeling
 
 ### Outline
 
 * First I will check for stationarity/unit roots using the Dickey-Fuller test and if I find the time series are not stationary I will work with the data to arrive at stationarity.
-* I will construct a baseline persistance model for both SPY and VIX
-* I will construct ARIMA and then ARIMAX models for both SPY and VIX seperately using sentiment indicators and the NY Times sentiment analysis seperately
-* I will work with my sentiment indicators to feature engineer a couple new features
-* I will create a VAR and VARIMAX models using SPY and VIX together
+* I then construct a baseline persistance model for both SPY and VIX
+* I construct ARIMA and then ARIMAX models for both SPY and VIX seperately using sentiment indicators and the NY Times sentiment analysis seperately
+* I featured engineered two new sentiment features
+* I built multivariate VAR and VARIMAX models
+* I created a Long Short-Term Memory Neural Net Model to predict SPY
 
 ### Stationarity
 
 The first thing I did was check for unit roots/stationarity using the Dickey-Fuller test. For the SPY data I got a test stat of 0.22 and a p-value of .974. Thus I could not reject the null that the data is not stationary. I took a first order difference of the spy closing prices and performed the test again. The differenced test stat was -9.7 with a p-value of ~0. Thus we can reject the null that the data is not stationary. For VIX the closing prices resulted in a test stat of -3.04 with a p-value of 0.03. Thus I rejected the null that the data is not stationary. I also plan to use differenced VIX data as well as the closing prices later on.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/differenced_spy.png)
-
-The differenced SPY values look stationary although its clear that there was a large increase in movement right at the end of my dataset.
-
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/acf_pacf_spy.png)
-
-The autocorrelation plot tells us whether we need to add MA terms while the PACF tells us about the AR terms. It is clear that the first lag is significant but somewhat weakly correlated in the ACF plot. The PACF plot shows us also that the 1st lag is likely to be somewhat useful to include as the AR term. For this first model I'll make sure to use a (1,1,1) and will try some other combinations as well. These plots look typical for a random walk time series in that there is some low correlation for the first lag but otherwise not much.
-
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/acf_pacf_vix.png)
-
-We can see from the ACF plot that there are a number of strongly positively correlated lags we can use for the moving average model. This is somewhat expected as there is a tendency for VIX to be sticky for a period of time although it does tend to mean revert to a white noise series. At times when VIX is in a period of turbulance the variance is likely to be highly correlated with itself. Later on I'll explore some ARCH and GARCH models to better model this behavior. The PACF shows us that only the first lag is strongly correlated. Thus a (1,0,n) model is likely to be decent with n potentially being a number of variables.
 
 ### Baseline Modles
 
-For my baseline SPY and VIX models I will be using a persistance algorithm where the predicted value at the t+1 time step is the value at the t-1 time step. First I will set the train test date split I plan to use going forward, with the test data being the last year of my datset. I got Test RMSE values of 6.694 for the SPY model and 4.34 for the VIX model.
+For my baseline SPY and VIX models I will be using a persistance algorithm where the predicted value at the t+1 time step is the value at the t-1 time step. First I will set the train test date split I plan to use going forward, with the test data being the last year of my datset. 
 
 ### ARIMA Models
 
 First I built univariate models for both SPY and VIX before expanding them to include my exogenous sentiment features. The (1,1,1) ARIMA model for both SPY and VIX resulted in the lowest test RMSE levels although they were very close to my baseline models. This is disappointing but not unexpected due to the stock market being understood as a random walk model.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/spy_diff_arima.png)
-
-
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/spy_forecast_arima.png)
-
 Looking at this its clear that the model is essentially predicting very little week over week change. This leads to a upward trend for the forecasted SPY prices.
-
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/spy_joint.png)
-
-The vast majority of the scatterplot is packed relatively evenly around 0,0. This implies that knowing the change the day before is essentially uncorrelated with the next change. This is what we woudl expect from a random walk time series. Due to this low level of impact the model is unable to predict much from the previous times values.
-
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/vix_diff_arima.png)
-
-
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/vix_forecast_arima.png)
 
 We get very similar results for the VIX forecasts. The model is vastly understating the realized variance and predicts close to a straight line trend. Now I'll add the exogenous variables.
 
@@ -177,19 +149,7 @@ We get very similar results for the VIX forecasts. The model is vastly understat
 
 The first thing I did was run through a (1,1,1) model using each of my sentiment features individually. The model that performed best was the VADER Sentiment model using the NY Times snippets. This model was marginally improved compared to the ARIMA and baseline but again was not particularly different. For VIX it looks like median active manager leverage was the best model by RMSE. Again this model was slightly improved compared to the ARIMA but it is not noticeably better than the baseline. Going forward, I'll use the median levarage and the VADER sentiment of the NY Times snippet as my exogenous variables.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/spy_diff_arimax.png)
-
-
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/spy_forecast_arimax.png)
-
-The ARIMAX predictions are a bit more volatile than the ARIMA but are still vastly understating the real variance.
-
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/vix_diff_arimax.png)
-
-
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/vix_forecast_arimax.png)
-
-The forecast model looks like an improvement over the baseline and the ARIMA model. When there is a higher median leverage we would expect a lower value of VIX. This makes sense as VIX is known as the "fear" index.
+The ARIMAX predictions are a bit more volatile than the ARIMA but are still vastly understating the real variance.When there is a higher median leverage we would expect a lower value of VIX. This makes sense as VIX is known as the "fear" index.
 
 ### Feature Engineering
 
@@ -199,6 +159,7 @@ In this section I created two new features from my exogenous variables to see if
 * Median Leverage * Snippet_Vader -If the leverage is higher and the sentiment is higher this could be a positive signal
 
 ### Multivariate Models
+
 Now that I've created a couple new features I'll move on to multivariate time series analysis.
 
 #### Granger Causality
@@ -212,12 +173,33 @@ Using Johansen's cointegration test we reject the null that SPY and VIX differen
 #### VAR and VARMAX
 
 First I performed a VAR model with a single exogenous varialbe. I examined multiple lags and found that a 1 lag model with my engineered feature of the median leverage times the bull-bear spread produced the best model. A model including all the exogenous variables performed slightly worse than the single feature model. Finally I tested a VARMAX model using and got a very mariginally improved result.
-
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/var_diff.png)
-
 Looking at the charts it appears that the multivariate models are performing better but still significantly underestimating the realized variance.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/var_forecast.png)
+### LSTM Model
+
+The final model I create was a LSTM Neural net model. In order to create this model I first scaled and then converted my endogenous and exogenous variables to supervised ones. I then used TensorFlow Keras to design and build my LSTM forecast model for the SP500.
+
+Now that my models have been built I will implement two different trading strategies in my final notebook.
+
+## Trading Evaluation
+
+I decided to implement my forecasts via two different trading strategies and compare them to a simple buy and hold passive invesment strategy. For both my strategies, I look at the predicted change over the next time period and then calculate a return based on the actual change in SPY. For my first strategy, if the forecast is positive I take a 100% long position and if the forecast is negative I take a 100% short position. For my second strategy I scale my leverage based on the size of the expected forecast using the following rules:
+* Predicted change <0.5% - 50% leverage
+* Predicted change 0.5%<x<1% 100% leverage
+* Predicted change >1% 200% leverage
+
+### Results
+
+My LSTM model performed the best under both trading implementations, significantly beating the buy and hold strategy.
+
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/trading_results_const_final.png)
+
+The LSTM model performed the best with a significant outperformance compared to the other models under the first trading strategy. The ARIMAX model still performed quite well, beating the buy and hold strategy but the VAR/VARMAX models underperformed consistently. Both the LSTM and ARIMAX models seemed to do well when the market experienced downward shocks which could be an especially valuable result.
+
+![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/trading_results_scaled_final.png)
+
+Again, the LSTM model outperformed the rest of the herd. By scaling the leverage based on the size of the expected move, I increased overall profit quite substantially. Note that the ARIMAX model performed worse under this leveraged implementation while all of the multivariate forecasts performed better. Although the ARIMAX model performed well directionally as evidenced by the 100% leverage model, it did not perform as well when the results were related to the strength of its predictions as measured by size. The scaled LSTM model seemed to do well when the market experienced downward shocks which could be an especially valuable result.
+
 
 ## Conclusions
 

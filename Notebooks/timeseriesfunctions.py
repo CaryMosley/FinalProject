@@ -86,7 +86,7 @@ def arima_summary(time_series,AR=0,MA =0):
     
 def plot_arima_forecasts(time_series_diff,time_series, AR = 0, MA = 0):
     """
-    This function will graph the time series including the forecast data.
+    This function takes in a time series and a differenced set and plots the forecasted values.
     """
     #I'm going to break the time series into a train and test set using the earlier data as the train
     time_series_train = time_series_diff[:train_end]
@@ -199,7 +199,7 @@ def ARIMAX_summary(time_series,AR,MA,exogenous):
     
 def plot_ARIMAX_forecasts(time_series_diff,time_series, AR, MA, exogenous):
     """
-    This function will graph the time series including the forecast data.
+    This function takes in a time series and a differenced set and plots the forecasted values.
     """
     #I'm going to break the time series into a train and test set using the earlier data as the train
     time_series_train = time_series_diff[:train_end]
@@ -424,7 +424,7 @@ def VAR_summary(time_series,lag,exogenous):
     
 def plot_VAR_forecasts(time_series_diff,time_series, lag, exogenous,series=0):
     """
-    This function will graph the time series including the forecast data.
+    This function takes in a time series and a differenced set and plots the forecasted values.
     """
     #I'm going to break the time series into a train and test set using the earlier data as the train
     time_series_train = time_series_diff[:train_end]
