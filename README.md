@@ -149,7 +149,7 @@ We get very similar results for the VIX forecasts. The model is vastly understat
 
 The first thing I did was run through a (1,1,1) model using each of my sentiment features individually. The model that performed best was the VADER Sentiment model using the NY Times snippets. This model was marginally improved compared to the ARIMA and baseline but again was not particularly different. For VIX it looks like median active manager leverage was the best model by RMSE. Again this model was slightly improved compared to the ARIMA but it is not noticeably better than the baseline. Going forward, I'll use the median levarage and the VADER sentiment of the NY Times snippet as my exogenous variables.
 
-The ARIMAX predictions are a bit more volatile than the ARIMA but are still vastly understating the real variance.When there is a higher median leverage we would expect a lower value of VIX. This makes sense as VIX is known as the "fear" index.
+The ARIMAX predictions are a bit more volatile than the ARIMA but are still vastly understating the real variance. When there is a higher median leverage we would expect a lower value of VIX. This makes sense as VIX is known as the "fear" index.
 
 ### Feature Engineering
 
@@ -172,8 +172,7 @@ Using Johansen's cointegration test we reject the null that SPY and VIX differen
 
 #### VAR and VARMAX
 
-First I performed a VAR model with a single exogenous varialbe. I examined multiple lags and found that a 1 lag model with my engineered feature of the median leverage times the bull-bear spread produced the best model. A model including all the exogenous variables performed slightly worse than the single feature model. Finally I tested a VARMAX model using and got a very mariginally improved result.
-Looking at the charts it appears that the multivariate models are performing better but still significantly underestimating the realized variance.
+First I performed a VAR model with a single exogenous variable. I examined multiple lags and a variety of feature sets. Finally I tested a VARMAX model using and got a very mariginally improved result. The multivariate models are performing better but still significantly underestimating the realized variance. The final models I'm moving towards the trading evaluation are a 1-lag VAR model and a (1,2) VARMAX model, both with my final exogenous feature set.
 
 ### LSTM Model
 
@@ -194,11 +193,11 @@ My LSTM model performed the best under both trading implementations, significant
 
 ![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/trading_results_const_final.png)
 
-The LSTM model performed the best with a significant outperformance compared to the other models under the first trading strategy. The ARIMAX model still performed quite well, beating the buy and hold strategy but the VAR/VARMAX models underperformed consistently. Both the LSTM and ARIMAX models seemed to do well when the market experienced downward shocks which could be an especially valuable result.
+The LSTM model performed the best with a significant outperformance compared to the other models under the first trading strategy. The ARIMAX model still performed quite well, beating the buy and hold strategy but the VAR/VARMAX models underperformed consistently. Both the LSTM and ARIMAX models seemed to do well when the market experienced downward shocks which could be an especially valuable result. Using the LSTM model wouldve resulted in a PnL of $50,000 vs $13,000 using buy and hold.
 
 ![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/trading_results_scaled_final.png)
 
-Again, the LSTM model outperformed the rest of the herd. By scaling the leverage based on the size of the expected move, I increased overall profit quite substantially. Note that the ARIMAX model performed worse under this leveraged implementation while all of the multivariate forecasts performed better. Although the ARIMAX model performed well directionally as evidenced by the 100% leverage model, it did not perform as well when the results were related to the strength of its predictions as measured by size. The scaled LSTM model seemed to do well when the market experienced downward shocks which could be an especially valuable result.
+Again, the LSTM model outperformed the rest of the herd. By scaling the leverage based on the size of the expected move, I increased overall profit quite substantially. Note that the ARIMAX model performed worse under this leveraged implementation while all of the multivariate forecasts performed better. Although the ARIMAX model performed well directionally as evidenced by the 100% leverage model, it did not perform as well when the results were related to the strength of its predictions as measured by size. The scaled LSTM model seemed to do well when the market experienced downward shocks which could be an especially valuable result. Using the LSTM model wouldve resulted in a PnL of $90,000 vs $13,000 using buy and hold.
 
 
 ## Conclusions
