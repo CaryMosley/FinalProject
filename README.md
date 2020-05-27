@@ -38,7 +38,7 @@ I'm putting a few financial terms here for easy of explanation later
 
 ## Executive Summary
 
-I begin by collecting the daily closing prices for the SP500 and the VIX index. I also use the NY Times and the Quandl datasets containing the National Association of Active Managers sentiment and the American Associaton of Individual Investor sentiment data. From I cleaned and processed the data, including performing natural language processing sentiment analysis on the NY Times data before performing EDA. Next I will create progressively more complex models to examine the differences in how they perform. I go from a baseline persistance model to univariate models, to multivariate models, finally creating a LSTM model. The final evaluation I perform is seeing how the best performing model of each type does under two potential trading implementations. 
+I begin by collecting the daily closing prices for the SP500 and the VIX index. I also use the NY Times and the Quandl datasets containing the National Association of Active Managers sentiment and the American Associaton of Individual Investor sentiment data. From I cleaned and processed the data, including performing natural language processing sentiment analysis on the NY Times data before performing EDA. Next I will create progressively more complex models to examine the differences in how they perform. I go from a baseline persistance model to univariate models, to multivariate models, finally creating a LSTM model. For each of my models I use RMSE/AIC/BIC and cross validation to choose the best lag terms and feature set. The final evaluation I perform is seeing how the best performing model of each type does under two potential trading implementations. 
 
 Under both implementations the LSTM model performed the best, resulting in signficant outperformance compared to both a buy and hold strategy as well as the other models. By performing well under the constant leverage and even better under the scaled leverage model, it is clear that the LSTM is performing quite well. The LSTM model performed even better under the significantly changing market condiitons that occurred during march and april 2020.
 
@@ -135,7 +135,7 @@ The first thing I did was check for unit roots/stationarity using the Dickey-Ful
 
 ### Baseline Modles
 
-For my baseline SPY and VIX models I will be using a persistance algorithm where the predicted value at the t+1 time step is the value at the t-1 time step. First I will set the train test date split I plan to use going forward, with the test data being the last year of my datset. 
+For my baseline SPY and VIX models I will be using a persistance algorithm where the predicted value at the t+1 time step is the value at the t-1 time step. First I will set the train test date splits I plan to use going forward. 
 
 ### ARIMA Models
 
