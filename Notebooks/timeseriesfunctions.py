@@ -259,6 +259,7 @@ def plot_ARIMAX_forecasts(time_series_diff,time_series, AR, MA, exogenous):
     plt.show()    
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
     """This function came from Jason Brownlee of Machine Learning Mastery.com
+    https://machinelearningmastery.com/convert-time-series-supervised-learning-problem-python/
     Frame a time series as a supervised learning dataset. Arguments:
     mdata: Sequence of observations as a list or NumPy array.
     n_in: Number of lag observations as input (X).
