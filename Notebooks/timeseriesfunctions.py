@@ -16,31 +16,45 @@ def DickeyFullerTest(time_series, alpha = .05):
     print ('Dickey-Fuller test: \n')
     print(results)
     
-def ARIMA_models(time_series,AR_terms, MA_terms):
+def ARIMA_models(time_series,AR_terms, MA_terms, train_end, test_start):
     '''This function takes in a timeseries and a set of AR and MA terms to try. The time series
     that it takes in needs to be already stationary. The function then returns a data frame
-    of the model results'''
-    #I'm going to break the time series into a train and test set using the earlier data as the train
-    time_series_train = time_series[:train_end]
-    time_series_test = time_series[test_start:]
+    of the model results. It also inputs multiple training and testing dates for cross validation'''
+  
     
-    #Create results dataframe
+
+    
+        #Create results dataframe
     results = pd.DataFrame(columns=['Order', 'AIC', 'BIC', 'Test RMSE'])
     
-    #ignore orders that do not converge or cause other erros
+        #ignore orders that do not converge or cause other erros
     for p in AR_terms:
         for q in MA_terms:
             try:
                 order = (p,0,q)
                 
-            #create the ARIMA model and forecast
-                time_series_model = ARIMA(time_series_train,order=order)
-                time_series_fitted = time_series_model.fit()
+                #cross validation
+                test_rmse_list = []
+                aic_list = []
+                bic_list = []
+                #I'm going to break the time series into a train and test set using the earlier data as the
+                for date in range(0,len(train_end)):
+                    try:
+                        time_series_train = time_series[:train_end[date]]
+                        time_series_test = time_series[test_start[date]:]
+                    #create the ARIMA model and forecast
+                        time_series_model = ARIMA(time_series_train,order=order)
+                        time_series_fitted = time_series_model.fit()
                 
-                forecast, error, confidence_interval = time_series_fitted.forecast(len(time_series_test),alpha=.05)
-                test_rmse = np.sqrt(mean_squared_error(time_series_test.values,forecast))
-                results = results.append({'Order': order, 'AIC' : round(time_series_fitted.aic,3),
-                           'BIC': round(time_series_fitted.bic,3),'Test RMSE': round(test_rmse,3)},ignore_index=True)
+                        forecast, error, confidence_interval = time_series_fitted.forecast(len(time_series_test),alpha=.05)
+                        test_rmse_list.append(np.sqrt(mean_squared_error(time_series_test.values,forecast)))
+                        aic_list.append(time_series_fitted.aic)
+                        bic_list.append(time_series_fitted.bic)
+                    except:
+                        continue
+                results = results.append({'Order': order, 'AIC' : round(np.mean(aic_list),3),
+                           'BIC': round(np.mean(bic_list),3),'Test RMSE': round(np.mean(test_rmse_list),3)},ignore_index=True)
+                    
             except:
                 print('Order',order,'caused an error.')
                 continue
@@ -51,8 +65,8 @@ def plot_arima(time_series, AR = 0, MA = 0):
     This function will graph the time series including the forecast data.
     """
     #I'm going to break the time series into a train and test set using the earlier data as the train
-    time_series_train = time_series[:train_end]
-    time_series_test = time_series[test_start:]
+    time_series_train = time_series[:train_end[0]]
+    time_series_test = time_series[test_start[0]:]
     order = (AR,0,MA)
          
     #create model and forecasts
@@ -79,8 +93,8 @@ def arima_summary(time_series,AR=0,MA =0):
     """
     This function will return the summary of the model.
     """
-    time_series_train = time_series[:train_end]
-    time_series_test = time_series[test_start:]
+    time_series_train = time_series[:train_end[0]]
+    time_series_test = time_series[test_start[0]:]
     order = (AR,0,MA)
     print(ARIMA(time_series_train, order=order).fit().summary())
     
@@ -89,10 +103,10 @@ def plot_arima_forecasts(time_series_diff,time_series, AR = 0, MA = 0):
     This function takes in a time series and a differenced set and plots the forecasted values.
     """
     #I'm going to break the time series into a train and test set using the earlier data as the train
-    time_series_train = time_series_diff[:train_end]
-    time_series_test = time_series_diff[test_start:]
-    values_train = time_series[:train_end]
-    values_test = time_series[test_start:]
+    time_series_train = time_series_diff[:train_end[0]]
+    time_series_test = time_series_diff[test_start[0]:]
+    values_train = time_series[:train_end[0]]
+    values_test = time_series[test_start[0]:]
     order = (AR,0,MA)
          
     #create model and forecasts
@@ -117,15 +131,13 @@ def plot_arima_forecasts(time_series_diff,time_series, AR = 0, MA = 0):
    
     plt.show()
 
-def ARIMAX_models_single(time_series,AR_terms, MA_terms,exogenous):
+def ARIMAX_models_single(time_series,AR_terms, MA_terms,exogenous,train_end,test_start):
     '''This function takes in a timeseries and a set of AR and MA terms to try. The time series
     that it takes in needs to be already stationary. The function then returns a data frame
-    of the model results'''
-    #I'm going to break the time series into a train and test set using the earlier data as the train
-    time_series_train = time_series[:train_end]
-    time_series_test = time_series[test_start:]
-    exog_train = exogenous[:train_end]
-    exog_test = exogenous[test_start:]
+    of the model results. The function takes in a list of train and test dates to run cross validation'''
+    
+    
+    
     
     #Create results dataframe
     results = pd.DataFrame(columns=['Order', 'AIC', 'BIC', 'Test RMSE', 'Exogenous'])
@@ -136,14 +148,30 @@ def ARIMAX_models_single(time_series,AR_terms, MA_terms,exogenous):
             for column in exogenous:
                 try:
                     order = (p,0,q)
-                
-                    #create the ARIMA model and forecast
-                    time_series_model = ARIMA(endog = time_series_train, exog = exog_train[[column]], order = order)
-                    time_series_fitted = time_series_model.fit()
-                    forecast, error, confidence_interval = time_series_fitted.forecast(len(time_series_test),exog=exog_test[[column]], alpha=.05)
-                    test_rmse = np.sqrt(mean_squared_error(time_series_test.values,forecast))
-                    results = results.append({'Order': order, 'AIC' : round(time_series_fitted.aic,3),
-                           'BIC': round(time_series_fitted.bic,3),'Test RMSE': round(test_rmse,3),
+                    
+                    #cross validation
+                    test_rmse_list = []
+                    aic_list = []
+                    bic_list = []
+                    for date in range(0,len(train_end)):
+                        try:
+    #I'm going to break the time series into a train and test set using the earlier data as the train
+                            time_series_train = time_series[:train_end[date]]
+                            time_series_test = time_series[test_start[date]:]
+                            exog_train = exogenous[:train_end[date]]
+                            exog_test = exogenous[test_start[date]:]
+                            #create the ARIMA model and forecast
+                            time_series_model = ARIMA(endog = time_series_train, exog = exog_train[[column]], order = order)
+                            time_series_fitted = time_series_model.fit()
+                            forecast, error, confidence_interval = time_series_fitted.forecast(len(time_series_test),exog=exog_test[[column]], alpha=.05)
+                            test_rmse_list.append(np.sqrt(mean_squared_error(time_series_test.values,forecast)))
+                            aic_list.append(time_series_fitted.aic)
+                            bic_list.append(time_series_fitted.bic)
+                        except:
+                            continue
+                            
+                    results = results.append({'Order': order, 'AIC' : round(np.mean(aic_list),3),
+                           'BIC': round(np.mean(bic_list),3),'Test RMSE': round(np.mean(test_rmse_list),3),
                                              'Exogenous': column},ignore_index=True)
                 except:
                     print('Order',order,'caused an error.')
@@ -156,10 +184,10 @@ def plot_ARIMAX(time_series, AR, MA, exogenous):
     This function will graph the time series including the forecast data.
     """
     #I'm going to break the time series into a train and test set using the earlier data as the train
-    time_series_train = time_series[:train_end]
-    time_series_test = time_series[test_start:]
-    exog_train = exogenous[:train_end]
-    exog_test = exogenous[test_start:]
+    time_series_train = time_series[:train_end[0]]
+    time_series_test = time_series[test_start[0]:]
+    exog_train = exogenous[:train_end[0]]
+    exog_test = exogenous[test_start[0]:]
     order = (AR,0,MA)
          
     #create model and forecasts
@@ -188,11 +216,11 @@ def ARIMAX_summary(time_series,AR,MA,exogenous):
     """
     This function will return the summary of the model.
     """
-    time_series_train = time_series[:train_end]
-    time_series_test = time_series[test_start:]
+    time_series_train = time_series[:train_end[0]]
+    time_series_test = time_series[test_start[0]:]
     
-    exog_train = exogenous[:train_end]
-    exog_test = exogenous[test_start:]
+    exog_train = exogenous[:train_end[0]]
+    exog_test = exogenous[test_start[0]:]
     
     order = (AR,0,MA)
     print(ARIMA(time_series_train,exog=exog_train, order=order).fit().summary())
@@ -202,12 +230,12 @@ def plot_ARIMAX_forecasts(time_series_diff,time_series, AR, MA, exogenous):
     This function takes in a time series and a differenced set and plots the forecasted values.
     """
     #I'm going to break the time series into a train and test set using the earlier data as the train
-    time_series_train = time_series_diff[:train_end]
-    time_series_test = time_series_diff[test_start:]
-    exog_train = exogenous[:train_end]
-    exog_test = exogenous[test_start:]
-    values_train = time_series[:train_end]
-    values_test = time_series[test_start:]
+    time_series_train = time_series_diff[:train_end[0]]
+    time_series_test = time_series_diff[test_start[0]:]
+    exog_train = exogenous[:train_end[0]]
+    exog_test = exogenous[test_start[0]:]
+    values_train = time_series[:train_end[0]]
+    values_test = time_series[test_start[0]:]
     order = (AR,0,MA)
          
     #create model and forecasts
@@ -260,15 +288,10 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
     return agg    
 
 
-def VAR_models_single(time_series,AR_terms,exogenous):
-    '''This function takes in multiple timeseries and a set of AR terms to try. It also takes in exogenous variables. The time series
-    that it takes in needs to be already stationary. The function then returns a data frame using one exogenous variable at a time
+def VAR_models_single(time_series,AR_terms,exogenous,train_end,test_start):
+    '''This function takes in multiple timeseries and a set of AR terms to try. It also takes in exogenous variables. The time series that it takes in needs to be already stationary. The function uses multipe train and test periods for cross validation. The function then returns a data frame using one exogenous variable at a time
     of the model results'''
-    #I'm going to break the time series into a train and test set using the earlier data as the train
-    time_series_train = time_series[:train_end]
-    time_series_test = time_series[test_start:]
-    exog_train = exogenous[:train_end]
-    exog_test = exogenous[test_start:]
+
     
     #Create results dataframe
     results = pd.DataFrame(columns=['Lags','AIC', 'BIC', 'Test RMSE', 'Exogenous'])
@@ -276,62 +299,83 @@ def VAR_models_single(time_series,AR_terms,exogenous):
     #ignore orders that do not converge or cause other erros
     for column in exogenous:
         for lag in AR_terms:
-      
-    #create the VAR model and forecast
-            time_series_model = VAR(endog = time_series_train, exog = exog_train[[column]])
-            time_series_fitted = time_series_model.fit(lag)
+            test_rmse_list = []
+            aic_list = []
+            bic_list = []
+            for date in range(0,len(train_end)):
+                try:
+    #I'm going to break the time series into a train and test set using the earlier data as the train
+                    time_series_train = time_series[:train_end[date]]
+                    time_series_test = time_series[test_start[date]:]
+                    exog_train = exogenous[:train_end[date]]
+                    exog_test = exogenous[test_start[date]:]
+                    #create the VAR model and forecast
+                    time_series_model = VAR(endog = time_series_train, exog = exog_train[[column]])
+                    time_series_fitted = time_series_model.fit(lag)
         
-            forecasts = time_series_fitted.forecast(y= time_series_fitted.y, steps = len(time_series_test),exog_future=exog_test[[column]])
+                    forecasts = time_series_fitted.forecast(y= time_series_fitted.y, steps = len(time_series_test),exog_future=exog_test[[column]])
         
         
-            test_rmse = np.sqrt(mean_squared_error(time_series_test.values,forecasts))
-            results = results.append({'Lags': lag, 'AIC' : round(time_series_fitted.aic,3),
-                           'BIC': round(time_series_fitted.bic,3),'Test RMSE': round(test_rmse,3),
+                    test_rmse_list.append(np.sqrt(mean_squared_error(time_series_test.values,forecasts)))
+                    aic_list.append(time_series_fitted.aic)
+                    bic_list.append(time_series_fitted.bic)
+                except:
+                    continue
+                    
+            results = results.append({'Lags': lag, 'AIC' : round(np.mean(aic_list),3),
+                           'BIC': round(np.mean(bic_list),3),'Test RMSE': round(np.mean(test_rmse_list),3),
                                              'Exogenous': column},ignore_index=True)
            
     return results
 
-def VAR_models_combined(time_series,AR_terms,exogenous):
-    '''This function takes in multiple timeseries and a set of AR terms to try. It also takes in exogenous variables. The time series
-    that it takes in needs to be already stationary. The function then returns a data frame using all the exogenous variables at a time
+def VAR_models_combined(time_series,AR_terms,exogenous, train_end, test_start):
+    '''This function takes in multiple timeseries and a set of AR terms to try. It also takes in exogenous variables. The time series that it takes in needs to be already stationary. This function takes in a list of train and test periods for cross validation. The function then returns a data frame using all the exogenous variables at a time
     of the model results'''
-    #I'm going to break the time series into a train and test set using the earlier data as the train
-    time_series_train = time_series[:train_end]
-    time_series_test = time_series[test_start:]
-    exog_train = exogenous[:train_end]
-    exog_test = exogenous[test_start:]
+   
     
     #Create results dataframe
     results = pd.DataFrame(columns=['Lags','AIC', 'BIC', 'Test RMSE'])
     
-
+    test_rmse_list = []
+    aic_list = []
+    bic_list = []
 
     for lag in AR_terms:
       
     #create the VAR model and forecast
-        time_series_model = VAR(endog = time_series_train, exog = exog_train)
-        time_series_fitted = time_series_model.fit(lag)
+        for date in range(0,len(train_end)):
+            try:
+                
+    #I'm going to break the time series into a train and test set using the earlier data as the train
+                time_series_train = time_series[:train_end[date]]
+                time_series_test = time_series[test_start[date]:]
+                exog_train = exogenous[:train_end[date]]
+                exog_test = exogenous[test_start[date]:]
+                time_series_model = VAR(endog = time_series_train, exog = exog_train)
+                time_series_fitted = time_series_model.fit(lag)
         
-        forecasts = time_series_fitted.forecast(y= time_series_fitted.y, steps = len(time_series_test),exog_future=exog_test)
+                forecasts = time_series_fitted.forecast(y= time_series_fitted.y, steps = len(time_series_test),exog_future=exog_test)
         
         
         
-        test_rmse = np.sqrt(mean_squared_error(time_series_test.values,forecasts))
+                test_rmse_list.append(np.sqrt(mean_squared_error(time_series_test.values,forecasts)))
+                aic_list.append(time_series_fitted.aic)
+                bic_list.append(time_series_fitted.bic)
+            except:
+                continue
+                
         results = results.append({'Lags': lag, 'AIC' : round(time_series_fitted.aic,3),
                         'BIC': round(time_series_fitted.bic,3),'Test RMSE': round(test_rmse,3)
                         },ignore_index=True)
            
     return results
 
-def VARMAX_models(time_series,AR_terms, MA_terms,exogenous):
-    '''This function takes in multiple timeseries and a set of AR and MA terms to try. It also takes in exogenous variables. The time series
-    that it takes in needs to be already stationary. The function then returns a data frame using all the exogenous variables at a time
+
+def VARMAX_models(time_series,AR_terms, MA_terms,exogenous,train_end,test_start):
+    '''This function takes in multiple timeseries and a set of AR and MA terms to try. It also takes in exogenous variables. The time series that it takes in needs to be already stationary. The function then returns a data frame using all the exogenous variables at a time
     of the model results'''
     #I'm going to break the time series into a train and test set using the earlier data as the train
-    time_series_train = time_series[:train_end]
-    time_series_test = time_series[test_start:]
-    exog_train = exogenous[:train_end]
-    exog_test = exogenous[test_start:]
+   
     
     #Create results dataframe
     results = pd.DataFrame(columns=['Order','AIC', 'BIC', 'Test RMSE'])
@@ -341,16 +385,31 @@ def VARMAX_models(time_series,AR_terms, MA_terms,exogenous):
     for lag in AR_terms:
         for q in MA_terms:
             order = (lag,q)
+            test_rmse_list = []
+            aic_list = []
+            bic_list = []
+            for date in range(0,len(train_end)):
+                try:
+                    time_series_train = time_series[:train_end[date]]
+                    time_series_test = time_series[test_start[date]:]
+                    exog_train = exogenous[:train_end[date]]
+                    exog_test = exogenous[test_start[date]:]
     #create the VAR model and forecast
-            time_series_model = sm.tsa.VARMAX(endog = time_series_train,order=order, exog = exog_train)
-            time_series_fitted = time_series_model.fit(maxiter=1000)
+                    time_series_model = sm.tsa.VARMAX(endog = time_series_train,order=order, exog = exog_train)
+                    time_series_fitted = time_series_model.fit(maxiter=1000)
         
-            forecasts = time_series_fitted.forecast(steps = len(time_series_test),exog=exog_test)
+                    forecasts = time_series_fitted.forecast(steps = len(time_series_test),exog=exog_test)
            
         
-            test_rmse = np.sqrt(mean_squared_error(time_series_test.values,forecasts))
-            results = results.append({'Order': order, 'AIC' : round(time_series_fitted.aic,3),
-                            'BIC': round(time_series_fitted.bic,3),'Test RMSE': round(test_rmse,3)
+                    test_rmse_list.append(np.sqrt(mean_squared_error(time_series_test.values,forecasts)))
+                    aic_list.append(time_series_fitted.aic)
+                    bic_list.append(time_series_fitted.bic)
+                except:
+                    continue
+            
+            
+            results = results.append({'Order': order, 'AIC' : round(np.mean(aic_list),3),
+                            'BIC': round(np.mean(bic_list),3),'Test RMSE': round(np.mean(test_rmse_list),3)
                             },ignore_index=True)
            
     return results
@@ -373,10 +432,10 @@ def plot_VAR(time_series, lag, exogenous):
     This function will graph the time series including the forecast data.
     """
     #I'm going to break the time series into a train and test set using the earlier data as the train
-    time_series_train = time_series[:train_end]
-    time_series_test = time_series[test_start:]
-    exog_train = exogenous[:train_end]
-    exog_test = exogenous[test_start:]
+    time_series_train = time_series[:train_end[0]]
+    time_series_test = time_series[test_start[0]:]
+    exog_train = exogenous[:train_end[0]]
+    exog_test = exogenous[test_start[0]:]
     
          
     #create model and forecasts
@@ -412,11 +471,11 @@ def VAR_summary(time_series,lag,exogenous):
     """
     This function will return the summary of the model.
     """
-    time_series_train = time_series[:train_end]
-    time_series_test = time_series[test_start:]
+    time_series_train = time_series[:train_end[0]]
+    time_series_test = time_series[test_start[0]:]
     
-    exog_train = exogenous[:train_end]
-    exog_test = exogenous[test_start:]
+    exog_train = exogenous[:train_end[0]]
+    exog_test = exogenous[test_start[0]:]
     
 
     print(VAR(time_series_train,exog=exog_train).fit(lag).summary())
@@ -427,12 +486,12 @@ def plot_VAR_forecasts(time_series_diff,time_series, lag, exogenous,series=0):
     This function takes in a time series and a differenced set and plots the forecasted values.
     """
     #I'm going to break the time series into a train and test set using the earlier data as the train
-    time_series_train = time_series_diff[:train_end]
-    time_series_test = time_series_diff[test_start:]
-    exog_train = exogenous[:train_end]
-    exog_test = exogenous[test_start:]
-    values_train = time_series[:train_end]
-    values_test = time_series[test_start:]
+    time_series_train = time_series_diff[:train_end[0]]
+    time_series_test = time_series_diff[test_start[0]:]
+    exog_train = exogenous[:train_end[0]]
+    exog_test = exogenous[test_start[0]:]
+    values_train = time_series[:train_end[0]]
+    values_test = time_series[test_start[0]:]
     
          
     #create model and forecasts
@@ -467,10 +526,10 @@ def plot_VARMAX(time_series, AR_term, MA_term, exogenous):
     This function will graph the time series including the forecast data.
     """
     #I'm going to break the time series into a train and test set using the earlier data as the train
-    time_series_train = time_series[:train_end]
-    time_series_test = time_series[test_start:]
-    exog_train = exogenous[:train_end]
-    exog_test = exogenous[test_start:]
+    time_series_train = time_series[:train_end[0]]
+    time_series_test = time_series[test_start[0]:]
+    exog_train = exogenous[:train_end[0]]
+    exog_test = exogenous[test_start[0]:]
     p = AR_term
     q = MA_term
     order = (p,q)
@@ -509,11 +568,11 @@ def VARMAX_summary(time_series,AR_term, MA_term, exogenous):
     """
     This function will return the summary of the model.
     """
-    time_series_train = time_series[:train_end]
-    time_series_test = time_series[test_start:]
+    time_series_train = time_series[:train_end[0]]
+    time_series_test = time_series[test_start[0]:]
     
-    exog_train = exogenous[:train_end]
-    exog_test = exogenous[test_start:]
+    exog_train = exogenous[:train_end[0]]
+    exog_test = exogenous[test_start[0]:]
     p = AR_term
     q = MA_term
     order = (p,q)
@@ -525,12 +584,12 @@ def plot_VARMAX_forecasts(time_series_diff,time_series, AR_term,MA_term, exogeno
     This function will graph the time series including the forecast data.
     """
     #I'm going to break the time series into a train and test set using the earlier data as the train
-    time_series_train = time_series_diff[:train_end]
-    time_series_test = time_series_diff[test_start:]
-    exog_train = exogenous[:train_end]
-    exog_test = exogenous[test_start:]
-    values_train = time_series[:train_end]
-    values_test = time_series[test_start:]
+    time_series_train = time_series_diff[:train_end[0]]
+    time_series_test = time_series_diff[test_start[0]:]
+    exog_train = exogenous[:train_end[0]]
+    exog_test = exogenous[test_start[0]:]
+    values_train = time_series[:train_end[0]]
+    values_test = time_series[test_start[0]:]
     p = AR_term
     q = MA_term
     order = (p,q)
