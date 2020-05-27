@@ -1,9 +1,12 @@
 # Capstone Project- Fear and Sentiment in the Markets
-**Cary Mosley, May 2020
+Cary Mosley, May 2020
 
 ## Project Overview
 
 The goal of this project is to develop a weekly forecasting model for the S&P500 using the VIX index, a few exogenous measures of investor sentiment, and overall sentiment as calculated using New York Times headlines and article snippets. I will collect, clean, process and explore the data before building univariate, multivariate, and Long-Short Term Memory Neural Network forecasting models. I will first evaluate my models using RMSE and AIC/BIC before settling on the highest performing of each. Finally I will implement a couple different trading strategies over my test time period to see which model works best under potential real world trading implementations.
+
+My presentation deck is located here: 
+https://docs.google.com/presentation/d/14GSWN8WfCmeFLZ31IysbL6ILkZh_dmk1Hl8Qw0H3660/edit?usp=sharing
 
 ## Notebooks
 Included in this github are a jupyter notebooks folder containing:
@@ -18,7 +21,6 @@ TimeSeriesModeling.ipynb- I began with baseline models and continued through ARI
 
 TradingEvaluation.ipynb- I implement two different trading strategies and evaluate the outcome of my models here.
 
-My presentation deck is located here: https://docs.google.com/presentation/d/1PaTaL7PmdYINP538glLY_h3aETjdScsV6ozQD3CedYA/edit?usp=sharing
 
 
 
