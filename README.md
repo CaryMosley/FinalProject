@@ -42,7 +42,7 @@ I'm putting a few financial terms here for easy of explanation later
 
 I begin by collecting the daily closing prices for the SP500 and the VIX index. I also use the NY Times and the Quandl datasets containing the National Association of Active Managers sentiment and the American Associaton of Individual Investor sentiment data. From I cleaned and processed the data, including performing natural language processing sentiment analysis on the NY Times data before performing EDA. Next I will create progressively more complex models to examine the differences in how they perform. I go from a baseline persistance model to univariate models, to multivariate models, finally creating a LSTM model. For each of my models I use RMSE/AIC/BIC and cross validation to choose the best lag terms and feature set. The final evaluation I perform is seeing how the best performing model of each type does under two potential trading implementations. 
 
-Under both implementations the LSTM model performed the best, resulting in signficant outperformance compared to both a buy and hold strategy as well as the other models. By performing well under the constant leverage and even better under the scaled leverage model, it is clear that the LSTM is performing quite well. The LSTM model performed even better under the significantly changing market condiitons that occurred during march and april 2020.
+Under both implementations the LSTM model performed the best, resulting in signficant outperformance compared to both a buy and hold strategy as well as the other models. By performing well under the constant leverage and even better under the scaled leverage model, it is clear that the LSTM has robust performance. The LSTM model did even better under the significantly changing market condiitons that occurred during march and april 2020.
 
 ## Data Collection
 
@@ -62,24 +62,24 @@ For the sentiment data the main processing I had to do was adjust the dates so t
 The first thing I did was take a look at the 4 different indices over my time period.
 
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/combined_stock_time_series_final.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/master/Images/combined_stock_time_series_final.png)
 
 
 There has been a strong upward trend in the S&P500, the Nasdaq Index, and the Russell 2000 over the time period barring a few periods of downwrd moving. The VIX doesn't exhibit a long-run trend but there are a few period where it spikes. Due to the strong correlation between the S&P500, Nasdaq and Russell 2000 I will focus on just the S&P500 and the VIX index going forward.
 
 ### Sentiment Indexes
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/AAII_time_series_final.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/master/Images/AAII_time_series_final.png)
 
 Although there is a lot of oscillation there doesnt appear to be any strong trends in the data. This oscillation is found in all of these indicators along with a lack of noticeable trend over time.
 
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/leverage_time_series_final.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/master/Images/leverage_time_series_final.png)
 
 We can see that at times the most short manager still maintains a positive delta exposure to the market! The least long the most bullish manager gets appears to be below 100 only very infrequently. It also rarely gets above 200% exposure.
 
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/sentiment_distributions_final.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/master/Images/sentiment_distributions_final.png)
 
 Observations: 
 * The % of investors that are Bullish looks pretty normal distributed centered around 30-40%.
@@ -99,15 +99,15 @@ Observations:
 ### NY Times Article EDA
 
 #### Wordclouds
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/article_count_final.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/master/Images/article_count_final.png)
 
 Most days have a single digit number of articles however some days tend to have a lot of articles. I imagine that the days with more articles are likely to be due to times of stress in the market so I plan to add article count as an engineered feature.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/headlines_cloud_final.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/master/Images/headlines_cloud_final.png)
 
 Above is the wordcloud from the article headlines and below is the wordcloud from the article snippets.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/snippets_cloud_final.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/master/Images/snippets_cloud_final.png)
 
 The word clouds of the headlines look somewhat similar with New York prominent in both, company very prominent in the snippet cloud. "Deal", "rise", "new", "sell", "investor" are some other common words. 
 
@@ -115,7 +115,7 @@ The word clouds of the headlines look somewhat similar with New York prominent i
 
 Next I used the NLTK TextBlob function as well as the VADER sentiment function to turn my headlines and snippets into numerical sentiment values. I then grouped and averaged by the same weekly periods as the rest of my data. The weekly average sentiment for both TextBlob and VADER as well as snippet and headline is quite noisy and doesnt seem to exhibit any strong trend.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/nyt_sentiment_distribution_final.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/master/Images/nyt_sentiment_distribution_final.png)
 
 The sentiment data all looks roughly normal. The headlines for both TextBlob and VADER seem to be somewhat more negative than the snippets which are centered above zero.
 
@@ -193,11 +193,11 @@ I decided to implement my forecasts via two different trading strategies and com
 
 My LSTM model performed the best under both trading implementations, significantly beating the buy and hold strategy.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/trading_results_const_final.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/master/Images/trading_results_const_final.png)
 
 The LSTM model performed the best with a significant outperformance compared to the other models under the first trading strategy. The ARIMAX model still performed quite well, beating the buy and hold strategy but the VAR/VARMAX models underperformed consistently. Both the LSTM and ARIMAX models seemed to do well when the market experienced downward shocks which could be an especially valuable result. Using the LSTM model wouldve resulted in a PnL of $50,000 vs $13,000 using buy and hold.
 
-![models](https://github.com/CaryMosley/FinalProject/blob/CaryM/Images/trading_results_scaled_final.png)
+![models](https://github.com/CaryMosley/FinalProject/blob/master/Images/trading_results_scaled_final.png)
 
 Again, the LSTM model outperformed the rest of the herd. By scaling the leverage based on the size of the expected move, I increased overall profit quite substantially. Note that the ARIMAX model performed worse under this leveraged implementation while all of the multivariate forecasts performed better. Although the ARIMAX model performed well directionally as evidenced by the 100% leverage model, it did not perform as well when the results were related to the strength of its predictions as measured by size. The scaled LSTM model seemed to do well when the market experienced downward shocks which could be an especially valuable result. Using the LSTM model wouldve resulted in a PnL of $90,000 vs $13,000 using buy and hold.
 
